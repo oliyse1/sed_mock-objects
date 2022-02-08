@@ -16,7 +16,11 @@ public class CameraTest {
 
 
   Sensor sensor = context.mock(Sensor.class);
-  Camera camera = new Camera(sensor);
+  MemoryCard memoryCard = context.mock(MemoryCard.class);
+  Camera camera = new Camera(sensor, memoryCard);
+
+  byte DATA[] = {20,10,30,5};
+
 
   @Test
   public void switchingTheCameraOnPowersUpTheSensor() {
@@ -26,7 +30,41 @@ public class CameraTest {
     }});
 
     camera.powerOn();
+  }
 
+  @Test
+  public void switchingTheCameraOffPowersDownTheSensor() {
+
+    context.checking(new Expectations() {{
+      exactly(1).of(sensor).powerDown();
+    }});
+
+    camera.powerOff();
+  }
+
+  @Test
+  public void pressingTheShutterWhenThePowerIsOffDoesNothing() {
+
+    context.checking(new Expectations() {{
+      exactly(1).of(sensor).powerDown();
+    }});
+
+    camera.powerOff();
+    camera.pressShutter();
+  }
+
+  @Test
+  public void pressingTheShutterWithThePowerOnCopiesDataFromTheSensorToMemoryCard() {
+
+
+
+    context.checking(new Expectations() {{
+      exactly(1).of(sensor).powerUp();
+      exactly(1).of(sensor).readData(); will(returnValue(DATA));
+      exactly(1).of(memoryCard).write(DATA);
+    }});
+    camera.powerOn();
+    camera.pressShutter();
   }
 
 }
